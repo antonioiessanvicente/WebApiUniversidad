@@ -77,16 +77,30 @@ namespace WebApiUniversidad.Controllers
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         //[HttpPut("{id}")]
         [HttpPut("{id_al:int}/{id_as:int}/{id_cu:int}")]
-        public async Task<IActionResult> PutAlumno_se_matricula_asignatura([FromRoute] int id_al, int id_as, int id_cu)
+        public async Task<IActionResult> PutAlumno_se_matricula_asignatura([FromRoute] int id_al, int id_as, int id_cu, Alumno_se_matricula_asignatura alumnoAM)
         {
             //if (id != alumno_se_matricula_asignatura.Id_Alumno)
             //{
             //    return BadRequest();
             //}
 
-            var alumno_se_matricula_asignatura = await _context.Alumno_se_matricula_asignatura.FindAsync(id_al, id_as, id_cu);
-            _context.Entry(alumno_se_matricula_asignatura).State = EntityState.Modified;
+           var alumno_se_matricula_asignatura = await _context.Alumno_se_matricula_asignatura.FindAsync(id_al, id_as, id_cu);
 
+
+            /* CAMBIO Versión 1.01 */
+            // No se puede modificar al formar parte de una clave primaria, por lo que hay que borrar la actual e insertar la nueva.
+            // _context.Entry(alumno_se_matricula_asignatura).State = EntityState.Modified;
+
+            _context.Alumno_se_matricula_asignatura.Remove(alumno_se_matricula_asignatura);
+            await _context.SaveChangesAsync();
+
+            // Actualizo los valores del objeto encontrado con los del body de la llamada PUT
+            alumno_se_matricula_asignatura.Id_Alumno = alumnoAM.Id_Alumno;
+            alumno_se_matricula_asignatura.Id_Asignatura = alumnoAM.Id_Asignatura;
+            alumno_se_matricula_asignatura.Id_Curso_Escolar = alumnoAM.Id_Curso_Escolar;
+
+            // Insertamos de nuevo el objeto con los nuevos valores
+            _context.Alumno_se_matricula_asignatura.Add(alumno_se_matricula_asignatura);
             try
             {
                 await _context.SaveChangesAsync();
@@ -102,8 +116,11 @@ namespace WebApiUniversidad.Controllers
                     throw;
                 }
             }
-
-            return Ok(alumno_se_matricula_asignatura);
+            
+            /* CAMBIO Versión 1.01 */
+            // Se dewvuelve el objeto creado
+           // return Ok(alumno_se_matricula_asignatura);
+            return CreatedAtAction("GetAlumno_se_matricula_asignatura", new { id = alumno_se_matricula_asignatura.Id_Alumno }, alumno_se_matricula_asignatura);
         }
 
         // POST: api/Alumnos_se_matriculan_asignaturas

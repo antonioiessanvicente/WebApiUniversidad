@@ -68,8 +68,9 @@ namespace WebApiUniversidad.Controllers
                     throw;
                 }
             }
-
-            return NoContent();
+            /* CAMBIO Versión 1.01 */
+            //return NoContent();
+            return Ok(usuario);
         }
 
         // POST: api/Usuarios
